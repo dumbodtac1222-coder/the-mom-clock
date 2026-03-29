@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>นาฬิกาต้มไข่สามช่า - Realistic LED Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Mitr:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --retro-orange: #e67e22;
+            --retro-cream: #f4edd8;
+            --retro-brown: #4e342e;
+            --retro-red: #c0392b;
+            --retro-yellow: #f1c40f;
+            --retro-light-yellow: #f9e79f;
+        }
+
+        body {
+            font-family: 'Mitr', sans-serif;
+            background-color: #1a110f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+            color: var(--retro-brown);
+        }
+
+        .appliance-body {
+            background-color: var(--retro-cream);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 25px;
+            border-radius: 60px;
+            border: 12px solid #d7ccc8;
+            box-shadow: 
+                20px 20px 0px rgba(0,0,0,0.6),
+                inset 5px 5px 15px rgba(255,255,255,0.8);
+            text-align: center;
+            position: relative;
+        }
+
+        .brand-area {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+            color: var(--retro-brown);
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        .led-container {
+            width: 24px;
+            height: 24px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #bcaaa4;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .led-bulb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 4px 4px, #444, #111);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .led-bulb.active {
+            background: radial-gradient(circle at 4px 4px, #ff8a8a, #ff0000);
+            box-shadow: 
+                0 0 10px #ff0000,
+                0 0 20px #ff4444,
+                inset 0 0 5px rgba(255,255,255,0.8);
+            animation: led-glow 1.5s infinite ease-in-out;
+        }
+
+        @keyframes led-glow {
+            0%, 100% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(1.5); transform: scale(1.05); box-shadow: 0 0 15px #ff0000, 0 0 30px #ff4444; }
+        }
+
+        .display-screen {
+            background-color: #050505;
+            color: var(--retro-yellow);
+            border-radius: 25px;
+            border: 8px solid #5d4037;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 30px #000;
+            position: relative;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #timer-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5.5rem;
+            text-shadow: 0 0 20px var(--retro-yellow);
+        }
+
+        .duet-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+
+        .dance-gif {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            font-family: 'Mitr', sans-serif;
+            padding: 18px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.15);
+            transition: 0.1s;
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0px rgba(0,0,0,0.15);
+        }
+
+        .btn-quick { background: var(--retro-light-yellow); grid-column: span 2; border: 2px solid rgba(0,0,0,0.05); }
+        .btn-soft { background: var(--retro-yellow); }
+        .btn-medium { background: var(--retro-orange); color: white; }
+        .btn-hard { background: var(--retro-red); color: white; grid-column: span 2; }
+        
+        .btn-stop { 
+            background: #455a64; 
+            color: white; 
+            margin-top: 10px; 
+            font-size: 0.9rem;
+            grid-column: span 2;
+        }
+
+        #alert-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--retro-cream);
+            padding: 25px;
+            border-radius: 40px;
+            border: 8px solid var(--retro-orange);
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 0 50px var(--retro-orange);
+        }
+
+        .modal-duet {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            height: 220px;
+            margin-bottom: 20px;
+        }
+
+        .modal-gif {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .modal-content h2 { color: var(--retro-orange); font-size: 2rem; margin-bottom: 15px; }
+        .modal-content button { background: var(--retro-orange); color: white; width: 100%; font-size: 1.4rem; padding: 15px; }
+
+        .shake-it {
+            animation: shake 0.1s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, -1px) rotate(1deg); }
+            100% { transform: translate(1px, -1px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-app" class="appliance-body">
+        <div class="brand-area">
+            <div class="brand-label">SAMCHA CLASSIC</div>
+            <!-- Realistic LED Indicator -->
+            <div class="led-container">
+                <div id="status-led" class="led-bulb"></div>
+            </div>
+        </div>
+        
+        <div class="display-screen">
+            <div id="timer-display">00:00</div>
+            
+            <div id="duet-screen" class="duet-container">
+                <img class="dance-gif" src="izurinabnk48-สามช่า.gif" alt="รินะซังเต้น">
+                <img class="dance-gif" src="sheen.gif" alt="Sheen เต้น">
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button class="btn-quick" onclick="startTimer(10)">⚡ ด่วน (10 วินาที)</button>
+            <button class="btn-soft" onclick="startTimer(360)">🥚 ไข่ลวก (6 นาที)</button>
+            <button class="btn-medium" onclick="startTimer(480)">🍳 ยางมะตูม (8 นาที)</button>
+            <button class="btn-hard" onclick="startTimer(600)">🍱 ต้มสุก (10 นาที)</button>
+            <button id="stop-btn" class="btn-stop" style="display:none;" onclick="resetTimer()">เริ่มใหม่ / RESET</button>
+        </div>
+    </div>
+
+    <div id="alert-modal">
+        <div class="modal-content">
+            <div class="modal-duet">
+                <img class="modal-gif" src="izurinabnk48-สามช่า.gif" alt="รินะซัง">
+                <img class="modal-gif" src="sheen.gif" alt="Sheen">
+            </div>
+            <h2>💃 สุกแล้วจ้าแม่!</h2>
+            <button onclick="closeModal()">หยุดเพลง</button>
+        </div>
+    </div>
+
+    <audio id="alarm-sound" src="3  _           _    CONCERT VERSION .mp3" preload="auto" loop></audio>
+
+    <script>
+        let countdown;
+        const display = document.getElementById('timer-display');
+        const stopBtn = document.getElementById('stop-btn');
+        const modal = document.getElementById('alert-modal');
+        const alarmSound = document.getElementById('alarm-sound');
+        const duetScreen = document.getElementById('duet-screen');
+        const ledBulb = document.getElementById('status-led');
+        const mainApp = document.getElementById('main-app');
+
+        alarmSound.playbackRate = 1.5;
+
+        function startTimer(seconds) {
+            clearInterval(countdown);
+            stopAlarm();
+            
+            ledBulb.classList.add('active');
+            mainApp.classList.remove('shake-it');
+            
+            display.style.display = 'block';
+            duetScreen.style.display = 'none';
+            stopBtn.style.display = 'block';
+            
+            const then = Date.now() + seconds * 1000;
+            displayTimeLeft(seconds);
+
+            countdown = setInterval(() => {
+                const secondsLeft = Math.round((then - Date.now()) / 1000);
+                if (secondsLeft < 0) {
+                    clearInterval(countdown);
+                    timerFinished();
+                    return;
+                }
+                displayTimeLeft(secondsLeft);
+            }, 1000);
+        }
+
+        function displayTimeLeft(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainderSeconds = seconds % 60;
+            display.innerText = `${minutes < 10 ? '0' : ''}${minutes}:${remainderSeconds < 10 ? '0' : ''}${remainderSeconds}`;
+        }
+
+        function timerFinished() {
+            modal.style.display = 'flex';
+            display.style.display = 'none';
+            duetScreen.style.display = 'grid';
+            mainApp.classList.add('shake-it');
+            
+            alarmSound.currentTime = 0;
+            alarmSound.play().catch(e => console.log("Audio blocked"));
+        }
+
+        function resetTimer() {
+            clearInterval(countdown);
+            stopAlarm();
+            display.style.display = 'block';
+            duetScreen.style.display = 'none';
+            display.innerText = "00:00";
+            stopBtn.style.display = 'none';
+            ledBulb.classList.remove('active');
+            mainApp.classList.remove('shake-it');
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            resetTimer();
+        }
+
+        function stopAlarm() {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        }
+    </script>
+</body>
+</html>
